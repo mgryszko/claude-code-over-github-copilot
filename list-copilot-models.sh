@@ -16,7 +16,7 @@ fi
 # Check if GitHub token exists
 if [[ ! -f "$GITHUB_TOKEN_FILE" ]]; then
     echo "❌ GitHub Copilot token not found at $GITHUB_TOKEN_FILE"
-    echo "   Run 'make start' first to authenticate with GitHub"
+    echo "   Run 'just start' first to authenticate with GitHub"
     exit 1
 fi
 
@@ -53,5 +53,5 @@ jq -r '.data[] | select(.capabilities.type == "chat") | '"$FILTER"' |
 echo ""
 echo "# To use these models:"
 echo "# 1. Copy desired model entries to your copilot-config.yaml"
-echo "# 2. Restart LiteLLM: make stop && make start"
-echo "# 3. Test with: make test"
+echo "# 2. Restart LiteLLM: just stop && just start"
+echo "# 3. Test with: just test"
