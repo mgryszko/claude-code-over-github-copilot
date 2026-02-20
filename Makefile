@@ -6,7 +6,7 @@
 help:
 	@echo "Available targets:"
 	@echo "  make install-claude - Install Claude Code desktop application"
-	@echo "  make setup         - Set up virtual environment and dependencies"
+	@echo "  make setup         - Install dependencies with uv"
 	@echo "  make start         - Start LiteLLM proxy server"
 	@echo "  make test          - Test the proxy connection"
 	@echo "  make claude-enable - Configure Claude Code to use local proxy"
@@ -20,11 +20,10 @@ help:
 setup:
 	@echo "Setting up environment..."
 	@mkdir -p scripts
-	@python3 -m venv venv
-	@./venv/bin/pip install -r requirements.txt
+	@uv sync
 	@if [ ! -f .env ]; then \
 		echo "Generating .env file..."; \
-		python3 generate_env.py; \
+		uv run python generate_env.py; \
 	else \
 		echo "✓ .env file already exists, skipping generation"; \
 	fi
@@ -46,7 +45,7 @@ install-claude:
 # Start LiteLLM proxy
 start:
 	@echo "Starting LiteLLM proxy..."
-	@source venv/bin/activate && litellm --config copilot-config.yaml --port 4444
+	@uv run litellm --config copilot-config.yaml --port 4444
 
 # Stop running processes
 stop:
@@ -74,7 +73,7 @@ claude-enable:
 		cp ~/.claude/settings.json ~/.claude/settings.json.backup.$$(date +%Y%m%d_%H%M%S); \
 		echo "📁 Backed up existing settings to ~/.claude/settings.json.backup.$$(date +%Y%m%d_%H%M%S)"; \
 	fi; \
-	python3 scripts/claude_enable.py "$$MASTER_KEY"
+	uv run python scripts/claude_enable.py "$$MASTER_KEY"
 	@echo "✅ Claude Code configured to use local proxy"
 	@echo "💡 Make sure to run 'make start' to start the LiteLLM proxy server"
 
@@ -90,7 +89,7 @@ claude-disable:
 		cp "$$LATEST_BACKUP" ~/.claude/settings.json; \
 		echo "✅ Restored settings from $$LATEST_BACKUP"; \
 	else \
-		python3 scripts/claude_disable.py; \
+		uv run python scripts/claude_disable.py; \
 	fi
 
 # Show current Claude Code configuration
@@ -100,7 +99,7 @@ claude-status:
 	@if [ -f ~/.claude/settings.json ]; then \
 		echo "📄 Settings file: ~/.claude/settings.json"; \
 		echo ""; \
-		cat ~/.claude/settings.json | python3 -m json.tool 2>/dev/null || cat ~/.claude/settings.json; \
+		cat ~/.claude/settings.json | uv run python -m json.tool 2>/dev/null || cat ~/.claude/settings.json; \
 		echo ""; \
 		if grep -q "localhost:4444" ~/.claude/settings.json 2>/dev/null; then \
 			echo "🔗 Status: Using local proxy"; \

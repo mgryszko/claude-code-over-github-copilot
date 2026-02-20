@@ -17,3 +17,6 @@ ENV/
 .venv/
 pip-log.txt
 pip-delete-this-directory.txt
+
+# IDE
+.idea/
