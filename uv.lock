@@ -254,6 +254,7 @@ dependencies = [
     { name = "dnspython" },
     { name = "litellm", extra = ["proxy"] },
     { name = "psutil" },
+    { name = "pyyaml" },
     { name = "requests" },
     { name = "watchdog" },
 ]
@@ -263,6 +264,7 @@ requires-dist = [
     { name = "dnspython", specifier = ">=2.4.0" },
     { name = "litellm", extras = ["proxy"], specifier = ">=1.0.0" },
     { name = "psutil", specifier = ">=5.9.0" },
+    { name = "pyyaml", specifier = ">=6.0.0" },
     { name = "requests", specifier = ">=2.31.0" },
     { name = "watchdog", specifier = ">=3.0.0" },
 ]
