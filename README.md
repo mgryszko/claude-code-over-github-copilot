@@ -1,109 +1,114 @@
 # Claude Code over GitHub Copilot-model endpoints - Setup Instructions
 
+## Fork changes
+
+Forked from [kjetiljd/claude-code-over-github-copilot](https://github.com/kjetiljd/claude-code-over-github-copilot) with the following changes:
+
+- Updated models to current Claude versions (`claude-opus-4.6`, `claude-sonnet-4.6`, `claude-haiku-4.5`)
+- Migrated task runner from `make` to [`just`](https://github.com/casey/just)
+- Removed Claude Code installation step (assumed to be already installed)
+
 ## Overview
 
-This project allows you to use Claude Code with GitHub Copilot instead of Anthropic's servers. 
-We can't send company information to Anthropic, but we already have an agreement with GitHub Copilot for our 
+This project allows you to use Claude Code with GitHub Copilot instead of Anthropic's servers.
+We can't send company information to Anthropic, but we already have an agreement with GitHub Copilot for our
 VSCode and IDEA agents.
 
 The architecture uses:
-- **Translation Layer**: LiteLLM proxy to translate between Claude Code and GitHub Copilot APIs
-- **Local Proxy**: LiteLLM running locally (no external traffic to third parties)
-- **GitHub Integration**: Direct connection to GitHub Copilot models we're already authorized to use
+- **Translation layer**: LiteLLM proxy to translate between Claude Code and GitHub Copilot APIs
+- **Local proxy**: LiteLLM running locally (no external traffic to third parties)
+- **GitHub integration**: Direct connection to GitHub Copilot models we're already authorized to use
 
 **References:**
 - [Claude Code LLM Gateway Documentation](https://docs.anthropic.com/en/docs/claude-code/llm-gateway)
 - [LiteLLM Quick Start](https://docs.litellm.ai/#quick-start-proxy---cli)
 - [LiteLLM GitHub Copilot Provider](https://docs.litellm.ai/docs/providers/github_copilot)
 
-## Quick Start
+## Quick start
 
-### 1. Install Claude Code (if not already installed)
+### 1. Initial setup
+
 ```bash
-# Install Claude Code desktop application via npm
-make install-claude
-```
-
-This command installs Claude Code globally using npm. Requires Node.js and npm to be installed.
-
-### 2. Initial Setup
-```bash
-# Set up environment, dependencies, and generate API keys
-make setup
+just setup
 ```
 
 This command:
-- Creates a Python virtual environment
-- Installs required dependencies
+- Installs required dependencies via `uv`
 - Generates random UUID-based API keys in `.env` file (only if it doesn't exist)
 
-### 3. Configure Claude Code
+### 2. Configure Claude Code
+
 ```bash
-# Configure Claude Code to use the local proxy
-make claude-enable
+just claude-enable
 ```
 
 This command:
 - Backs up your existing Claude Code settings
 - Configures Claude Code to use `http://localhost:4444` as the API endpoint
-- Sets up model mappings (claude-sonnet-4, claude-opus-4, gpt-4)
+- Sets the primary model and fast model from `copilot-config.yaml` (first and second entries respectively)
 
-### 4. Start the Proxy Server
-- **Important**: The first run will trigger GitHub device authentication - follow the prompts in the terminal
+### 3. Start the proxy server
+
+> **Important**: The first run will trigger GitHub device authentication - follow the prompts in the terminal.
+
 ```bash
-# Start LiteLLM proxy server
-make start
+just start
 ```
 
-This will:
-- Activate the virtual environment
-- Start LiteLLM with the `copilot-config.yaml` configuration
+This will start LiteLLM with the `copilot-config.yaml` configuration.
 
-### 5. Test the Connection
+### 4. Test the connection
+
 ```bash
-# Test that everything is working
-make test
+just test
 ```
 
-### 6. In your project folder, start Claude Code
+### 5. Start Claude Code in your project folder
 
 ```bash
-# Open Claude Code in your project folder
 claude
 ```
 
-## Model Configuration
+## Model configuration
 
-The proxy exposes these models to Claude Code:
+Models are defined in `copilot-config.yaml`. The enable script automatically picks:
+- **Primary model** (`ANTHROPIC_MODEL`): first entry in `model_list`
+- **Fast model** (`ANTHROPIC_SMALL_FAST_MODEL`): second entry in `model_list`
 
-| Claude Code Model | Maps to GitHub Copilot           |
-|-------------------|----------------------------------|
-| `claude-sonnet-4` | `github_copilot/claude-sonnet-4` |
-| `gpt-4`         | `github_copilot/gpt-4`         |
+Current configuration:
 
-## Additional Commands
+| Role | Model name | GitHub Copilot model |
+|------|------------|----------------------|
+| Primary | `claude-opus-4.6` | `github_copilot/claude-opus-4.6` |
+| Fast | `claude-sonnet-4.6` | `github_copilot/claude-sonnet-4.6` |
+| Additional | `claude-haiku-4.5` | `github_copilot/claude-haiku-4.5` |
 
-### Check Status
+## Additional commands
+
+### Check status
 ```bash
-# View current Claude Code configuration and proxy status
-make claude-status
+just claude-status
 ```
 
-### Restore Original Settings
+### Restore original settings
 ```bash
-# Restore Claude Code to default Anthropic servers
-make claude-disable
+just claude-disable
 ```
 
-### Stop the Proxy
+### Stop the proxy
 ```bash
-# Stop the LiteLLM proxy server
-make stop
+just stop
+```
+
+### List available Copilot models
+```bash
+just list-models
+just list-models-enabled
 ```
 
 ## Troubleshooting
 
-- **Authentication Issues**: The first `make start` will prompt for GitHub authentication
-- **Connection Problems**: Use `make test` to verify the proxy is working
-- **Configuration Issues**: Use `make claude-status` to check your settings
-- **Reset Everything**: Use `make claude-disable` then `make claude-enable` to reconfigure
+- **Authentication issues**: The first `just start` will prompt for GitHub authentication
+- **Connection problems**: Use `just test` to verify the proxy is working
+- **Configuration issues**: Use `just claude-status` to check your settings
+- **Reset everything**: Use `just claude-disable` then `just claude-enable` to reconfigure
